@@ -3,10 +3,10 @@ name: Dispatch Handler Test2
 on:
   workflow_dispatch:
     inputs:
-      prop41:
-        description: 'prop41'
+      prop31:
+        description: 'prop31'
         required: false
-        default: 'val41'
+        default: 'val31'
   repository_dispatch:
     types: [build-zoo-handler]
 
@@ -31,7 +31,7 @@ jobs:
         dispatch-handler-client-payload-data: >
           {
             "event": "build-succeed",
-            "prop41": "val41",
+            "prop31": "val31",
             "owner": "jvalkeal",
-            "repo": "atest4"
+            "repo": "atest3"
           }
