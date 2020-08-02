@@ -52,7 +52,7 @@ jobs:
           -DprocessAllModules=false -DgenerateBackupPoms=false \
           -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}'
         jfrog rt mvn versions:set-property \
-          -DgenerateBackupPoms=false -Dproperty=demo4.version -DnewVersion=${{ github.payload.client_payload.build_zoo_handler_context.properties.atest4_version}}
+          -DgenerateBackupPoms=false -Dproperty=demo4.version -DnewVersion=${{ github.event.client_payload.build_zoo_handler_context.properties.atest4_version}}
         echo ::set-output name=RELEASE_VERSION::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         cat pom.xml
 
