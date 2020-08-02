@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+
     # base setup
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v1
@@ -39,11 +44,20 @@ jobs:
           --repo-deploy-snapshots=libs-spring-dataflow-private-snapshot \
 
     # build
+    # jfrog rt mvn -U -B clean install
     - name: Build and Publish
-      run: jfrog rt mvn -U -B clean install
+      id: build
+      run: |
+        jfrog rt mvn build-helper:parse-version versions:set \
+          -DprocessAllModules=false -DgenerateBackupPoms=false \
+          -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}'
+        jfrot rt mvn versions:update-property \
+          -DgenerateBackupPoms=false -Dproperty=atest4.version -DnewVersion=${{ github.payload.client_payload.build_zoo_handler_context.properties.atest4_version}}
+        echo ::set-output name=RELEASE_VERSION::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        cat pom.xml
 
     # zoo
-    - name: Notify main controller
+    - name: Notify Build Zoo Handler Controller
       uses: jvalkeal/build-zoo-handler@gh7-work1
       with:
         dispatch-handler-token: ${{ secrets.REPO_ACCESS_TOKEN }}
@@ -55,5 +69,8 @@ jobs:
             "event": "build-succeed",
             "prop41": "val41",
             "owner": "jvalkeal",
-            "repo": "atest3"
+            "repo": "atest3",
+            "properties": {
+              "atest3_version": "${{ steps.build.outputs.RELEASE_VERSION }}"
+            }
           }
