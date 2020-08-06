@@ -37,6 +37,13 @@ jobs:
           --repo-deploy-releases=libs-spring-dataflow-private-release \
           --repo-deploy-snapshots=libs-spring-dataflow-private-snapshot \
 
+    - name: Extract Zoo Context Properties
+      uses: jvalkeal/build-zoo-handler@gh7-work1
+      with:
+        dispatch-handler-extract-context-properties: true
+        ensure-env: |
+          BUILD_ZOO_HANDLER_atest4_version
+
     # build
     - name: Build and Publish
       id: build
@@ -45,9 +52,13 @@ jobs:
           -DprocessAllModules=false -DgenerateBackupPoms=false \
           -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}'
         jfrog rt mvn versions:set-property \
-          -DgenerateBackupPoms=false -Dproperty=demo4.version -DnewVersion=${{ github.event.client_payload.build_zoo_handler_context.properties.atest4_version}}
+          -DgenerateBackupPoms=false -Dproperty=demo4.version -DnewVersion=$BUILD_ZOO_HANDLER_atest4_version
         jfrog rt mvn -U -B clean install
         echo ::set-output name=RELEASE_VERSION::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+    # -DgenerateBackupPoms=false -Dproperty=demo4.version -DnewVersion=${{ github.event.client_payload.build_zoo_handler_context.properties.atest4_version}}
+    # -DgenerateBackupPoms=false -Dproperty=demo4.version -DnewVersion=$BUILD_ZOO_HANDLER_atest4_version
+    # echo ::set-output name=BUILD_ZOO_HANDLER_atest3_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 
     # zoo tag
     - name: Tag Release
@@ -71,8 +82,6 @@ jobs:
           {
             "event": "build-succeed",
             "prop41": "val41",
-            "owner": "jvalkeal",
-            "repo": "atest3",
             "properties": {
               "atest3_version": "${{ steps.build.outputs.RELEASE_VERSION }}"
             }
